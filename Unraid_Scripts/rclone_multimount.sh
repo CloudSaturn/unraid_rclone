@@ -11,7 +11,7 @@ DOCKER_BIN="/usr/bin/docker"
 # Rclone remote name to mount
 # rclone subfolder mounting is support via RCLONE_REMOTE="remote:/subfolder/"
 RCLONE_REMOTE="remote1:/subfolder/"
-`="remote2:/subfolder/"
+RCLONE_REMOTE2="remote2:/subfolder/"
 
 # Rclone & mergerfs mount points
 MOUNT_POINT_REMOTE1="/mnt/user/cloud/remote1"

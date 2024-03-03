@@ -13,7 +13,7 @@ DOCKER_BIN="/usr/bin/docker"
 RCLONE_REMOTE="remote:/subfolder/"
 
 # Rclone & mergerfs mount points
-MOUNT_POINT="/mnt/user/cloud/rclonevfs"
+MOUNT_POINT_REMOTE="/mnt/user/cloud/rclonevfs"
 MOUNT_POINT_LOCAL="/mnt/user/cloud/local"
 MOUNT_POINT_MERGERFS="/mnt/user/cloud/merged"
 
@@ -58,7 +58,7 @@ live_status_check() {
 }
 
 create_required_dirs_and_files() {
-    for dir in $MOUNT_POINT $MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS; do
+    for dir in $MOUNT_POINT_REMOTE $MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS; do
         if [ ! -d "$dir" ]; then
             echo -e "\033[33mDirectory $dir does not exist. Creating...\033[0m"
             mkdir -p "$dir"
@@ -107,14 +107,14 @@ start() {
         exit 1
     fi
 
-    if ! is_mounted $MOUNT_POINT; then
+    if ! is_mounted $MOUNT_POINT_REMOTE; then
         echo -e "\033[32mRunning rclone VFS mount...\033[0m"
-        $RCLONE_BIN mount $RCLONE_REMOTE $MOUNT_POINT --config $RCLONE_CONFIG --user-agent='Mozilla/5.0' $COMMON_RCLONE_OPTIONS --log-file $LOG_FILE --cache-dir $CACHE_DIR --daemon
+        $RCLONE_BIN mount $RCLONE_REMOTE $MOUNT_POINT_REMOTE --config $RCLONE_CONFIG --user-agent='Mozilla/5.0' $COMMON_RCLONE_OPTIONS --log-file $LOG_FILE --cache-dir $CACHE_DIR --daemon
     fi
 
     if ! is_mounted $MOUNT_POINT_MERGERFS; then
         echo -e "\033[32mRunning mergerfs...\033[0m"
-        $MERGERFS_BIN $MOUNT_POINT:$MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS -o defaults,async_read=false,allow_other,category.action=all,category.create=ff
+        $MERGERFS_BIN $MOUNT_POINT_REMOTE:$MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS -o defaults,async_read=false,allow_other,category.action=all,category.create=ff
     fi
 
     start_docker_containers
@@ -127,13 +127,13 @@ stop() {
         $MERGERFS_FUSERMOUNT_BIN -uz $MOUNT_POINT_MERGERFS
     fi
 
-    if is_mounted $MOUNT_POINT; then
-        $MERGERFS_FUSERMOUNT_BIN -uz $MOUNT_POINT
+    if is_mounted $MOUNT_POINT_REMOTE; then
+        $MERGERFS_FUSERMOUNT_BIN -uz $MOUNT_POINT_REMOTE
     fi
 }
 
 status() {
-    if is_mounted $MOUNT_POINT; then
+    if is_mounted $MOUNT_POINT_REMOTE; then
         echo -e "\033[32mrclone VFS mount is running.\033[0m"
     else 
         echo -e "\033[31mrclone VFS mount is not running.\033[0m"
@@ -155,7 +155,7 @@ status() {
 }
 
 ensure() {
-    if ! is_mounted $MOUNT_POINT; then
+    if ! is_mounted $MOUNT_POINT_REMOTE; then
         echo -e "\033[31mrclone VFS mount is not mounted or not functioning correctly. Remounting...\033[0m"
         stop
         start
@@ -170,8 +170,8 @@ ensure() {
 
 exit_test_mode() {
     echo -e "\033[31mExiting test mode...\033[0m"
-    if is_mounted $MOUNT_POINT; then
-        $MERGERFS_FUSERMOUNT_BIN -uz $MOUNT_POINT
+    if is_mounted $MOUNT_POINT_REMOTE; then
+        $MERGERFS_FUSERMOUNT_BIN -uz $MOUNT_POINT_REMOTE
     fi
     stop
     exit 0

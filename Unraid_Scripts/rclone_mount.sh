@@ -114,7 +114,7 @@ start() {
 
     if ! is_mounted $MOUNT_POINT_MERGERFS; then
         echo -e "\033[32mRunning mergerfs...\033[0m"
-        $MERGERFS_BIN $MOUNT_POINT:$MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS -o defaults,sync_read,allow_other,category.action=all,category.create=ff
+        $MERGERFS_BIN $MOUNT_POINT:$MOUNT_POINT_LOCAL $MOUNT_POINT_MERGERFS -o defaults,async_read=false,allow_other,category.action=all,category.create=ff
     fi
 
     start_docker_containers
